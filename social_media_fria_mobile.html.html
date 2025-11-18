@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media FRIA - Scroll Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900">
+    <div id="app"></div>
+
+    <script>
+        const posts = [
+            {
+                id: 1,
+                user: "NewsDaily",
+                avatar: "📰",
+                content: "BREAKING: Scandal rocks government! Officials deny all allegations. Full story in comments.",
+                engagement: "12.4K reactions • 8.2K shares",
+                type: "polarizing",
+                risk: "Echo chamber amplification - emotionally charged political content"
+            },
+            {
+                id: 2,
+                user: "HealthGuru_Official",
+                avatar: "💊",
+                content: "Doctors HATE this one simple trick! Click to discover the truth they don't want you to know...",
+                engagement: "45.1K reactions • 23K shares",
+                type: "misleading",
+                risk: "Health misinformation - clickbait driving engagement over accuracy"
+            },
+            {
+                id: 3,
+                user: "Maria_Foodie",
+                avatar: "🍕",
+                content: "Just made the most amazing pasta! Recipe below 👇",
+                image: true,
+                engagement: "234 reactions • 12 shares",
+                type: "normal",
+                risk: "Low risk - organic content buried by algorithm"
+            },
+            {
+                id: 4,
+                user: "PatriotsUnited",
+                avatar: "🇪🇺",
+                content: "They want to take away YOUR rights! Share if you agree that we need to TAKE BACK CONTROL! Elections are coming - vote for CHANGE!",
+                engagement: "89.3K reactions • 156K shares",
+                type: "political",
+                risk: "Electoral manipulation risk - emotionally charged pre-election content"
+            },
+            {
+                id: 5,
+                user: "Sponsored",
+                avatar: "💰",
+                content: "Based on your recent activity, you might be interested in: Premium Weight Loss Program - Limited Time Offer!",
+                engagement: "Sponsored content",
+                type: "targeted",
+                risk: "Microtargeting based on inferred sensitive data (health)"
+            },
+            {
+                id: 6,
+                user: "TruthSeeker_2024",
+                avatar: "🔍",
+                content: "Wake up people! The mainstream media won't tell you this but... [continues with conspiracy theory]",
+                engagement: "67.8K reactions • 94K shares",
+                type: "conspiracy",
+                risk: "Radicalization pathway - algorithm rewards divisive content"
+            },
+            {
+                id: 7,
+                user: "LocalArtist_Jane",
+                avatar: "🎨",
+                content: "Spent 3 months on this painting. Hope you like it!",
+                image: true,
+                engagement: "89 reactions • 3 shares",
+                type: "normal",
+                risk: "Algorithm suppression - quality content with low engagement"
+            },
+            {
+                id: 8,
+                user: "ElectionWatch",
+                avatar: "🗳️",
+                content: "URGENT: Massive voter fraud uncovered! They're stealing the election! Share before this gets deleted!!!",
+                engagement: "234K reactions • 567K shares",
+                type: "disinformation",
+                risk: "Electoral integrity threat - false claims amplified during election period"
+            }
+        ];
+
+        let state = {
+            currentView: 'scroll',
+            highlightedPost: null,
+            scrollProgress: 0,
+            isScrolling: true,
+            clickedPosts: []
+        };
+
+        function getRiskColor(type) {
+            const colors = {
+                'polarizing': 'border-l-4 border-orange-500',
+                'misleading': 'border-l-4 border-red-500',
+                'political': 'border-l-4 border-red-600',
+                'targeted': 'border-l-4 border-yellow-500',
+                'conspiracy': 'border-l-4 border-red-700',
+                'disinformation': 'border-l-4 border-red-900'
+            };
+            return colors[type] || 'border-l-4 border-gray-300';
+        }
+
+        function toggleHighlight(postId, postType) {
+            state.highlightedPost = state.highlightedPost === postId ? null : postId;
+            if (postType !== 'normal' && !state.clickedPosts.includes(postId)) {
+                state.clickedPosts.push(postId);
+            }
+            render();
+        }
+
+        function showAnalysis() {
+            if (state.clickedPosts.length > 0) {
+                state.currentView = 'analysis';
+                render();
+            }
+        }
+
+        function resetFeed() {
+            state.currentView = 'scroll';
+            state.scrollProgress = 0;
+            state.highlightedPost = null;
+            state.isScrolling = true;
+            startScroll();
+            render();
+        }
+
+        function startScroll() {
+            const interval = setInterval(() => {
+                if (state.scrollProgress >= 100) {
+                    clearInterval(interval);
+                } else {
+                    state.scrollProgress += 2;
+                }
+                render();
+            }, 100);
+        }
+
+        function renderFeed() {
+            const visiblePosts = Math.floor(state.scrollProgress / 12.5);
+            
+            return `
+                <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+                    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+                        <h1 class="text-2xl font-bold text-blue-600">SocialHub</h1>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-600 h-1 transition-all" style="width: ${state.scrollProgress}%"></div>
+                
+                <div class="max-w-2xl mx-auto bg-white min-h-screen pb-20">
+                    <div class="space-y-4 p-4">
+                        ${posts.slice(0, visiblePosts).map(post => `
+                            <div class="bg-white rounded-lg shadow-md p-4 ${getRiskColor(post.type)} hover:shadow-lg transition-all cursor-pointer" 
+                                 onclick="toggleHighlight(${post.id}, '${post.type}')">
+                                <div class="flex items-center mb-3">
+                                    <div class="text-3xl mr-3">${post.avatar}</div>
+                                    <div class="flex-1">
+                                        <div class="font-bold text-gray-900">${post.user}</div>
+                                        <div class="text-sm text-gray-500">2 hours ago</div>
+                                    </div>
+                                    ${post.type !== 'normal' ? `<span class="text-red-500 text-xl">⚠️</span>` : ''}
+                                </div>
+                                
+                                <p class="text-gray-800 mb-3">${post.content}</p>
+                                
+                                ${post.image ? '<div class="bg-gray-200 h-48 rounded-lg mb-3 flex items-center justify-center text-gray-500">[Image]</div>' : ''}
+                                
+                                <div class="flex items-center justify-between text-gray-600 text-sm border-t pt-3">
+                                    <div class="flex items-center space-x-4">
+                                        <button class="flex items-center hover:text-blue-600">👍 Like</button>
+                                        <button class="flex items-center hover:text-blue-600">💬 Comment</button>
+                                        <button class="flex items-center hover:text-blue-600">↗️ Share</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500 mt-2">${post.engagement}</div>
+                                
+                                ${state.highlightedPost === post.id && post.type !== 'normal' ? `
+                                    <div class="mt-3 p-3 bg-red-50 rounded border border-red-200">
+                                        <p class="text-xs text-red-800 font-medium">⚠️ ${post.risk}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${state.scrollProgress >= 100 ? `
+                        <div class="flex flex-col items-center justify-center py-12 px-4">
+                            ${state.clickedPosts.length === 0 ? `
+                                <div class="mb-6 bg-gray-100 rounded-full p-8 opacity-50">
+                                    <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </div>
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">
+                                    Explore the AI-powered feed first
+                                </h2>
+                                <p class="text-xl text-gray-600 mb-8 text-center max-w-xl">
+                                    Click on the <span class="font-bold text-red-600">red-bordered posts</span> above to reveal the fundamental rights violations hidden in this algorithm.
+                                </p>
+                                <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 max-w-xl">
+                                    <p class="text-lg text-yellow-900 font-semibold text-center">
+                                        ⚠️ You must click at least one risky post before proceeding to the FRIA analysis
+                                    </p>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-6" style="animation: bounce 1s infinite;">
+                                    👆 Scroll up and click any red-bordered post 👆
+                                </p>
+                            ` : `
+                                <div 
+                                    onclick="showAnalysis()"
+                                    style="cursor: pointer;"
+                                    class="mb-6 hover:scale-110 transition-transform bg-blue-50 rounded-full p-8 hover:bg-blue-100">
+                                    <svg class="w-32 h-32 text-blue-600" style="animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </div>
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">
+                                    You've experienced the AI-powered feed
+                                </h2>
+                                <p class="text-xl text-gray-600 mb-6 text-center max-w-xl">
+                                    You clicked ${state.clickedPosts.length} risky post${state.clickedPosts.length > 1 ? 's' : ''}. Notice how polarizing content got more engagement?
+                                </p>
+                                <div class="bg-green-50 border-2 border-green-400 rounded-lg p-4 mb-6 max-w-xl">
+                                    <p class="text-lg text-green-900 font-semibold text-center">
+                                        ✅ You've unlocked the FRIA analysis!
+                                    </p>
+                                </div>
+                                <p class="text-2xl font-bold text-blue-600 mb-4" style="animation: bounce 1s infinite;">
+                                    👆 Click the Eye Icon Above 👆
+                                </p>
+                                <button 
+                                    onclick="showAnalysis()"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg">
+                                    Or Click Here to See Our FRIA Analysis →
+                                </button>
+                                <p class="text-sm text-gray-500 mt-4">Continue exploring posts or proceed to analysis</p>
+                            `}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderAnalysis() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-2xl p-6 mb-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h1 class="text-3xl font-bold text-gray-900">This is what our FRIA tries to prevent</h1>
+                                <button onclick="resetFeed()" class="p-2 hover:bg-gray-100 rounded-full text-2xl">✕</button>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                <div class="bg-red-50 p-6 rounded-lg border-2 border-red-200">
+                                    <h2 class="text-2xl font-bold text-red-900 mb-4">⚠️ Fundamental Rights at Risk</h2>
+                                    <ul class="space-y-3 text-gray-700">
+                                        <li><strong>Art 7-8 Charter:</strong> Privacy violations through behavioral profiling</li>
+                                        <li><strong>Art 11 Charter:</strong> Freedom of expression distorted by amplification</li>
+                                        <li><strong>Art 21 Charter:</strong> Non-discrimination risks in content exposure</li>
+                                        <li><strong>Electoral integrity:</strong> Manipulation risks during elections</li>
+                                    </ul>
+                                </div>
+
+                                <div class="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
+                                    <h2 class="text-2xl font-bold text-yellow-900 mb-4">⚖️ AI Act Classification</h2>
+                                    <div class="space-y-4 text-gray-700">
+                                        <div>
+                                            <p class="font-semibold text-lg">High-Risk System</p>
+                                            <p class="text-sm">Annex III, Point 8: AI systems for influencing elections</p>
+                                        </div>
+                                        <div class="bg-white p-3 rounded">
+                                            <p class="font-semibold">Art 50 DSA:</p>
+                                            <p class="text-sm">VLOP must conduct systemic risk assessments</p>
+                                        </div>
+                                        <div class="bg-white p-3 rounded">
+                                            <p class="font-semibold">GDPR Arts 5, 6, 9, 22:</p>
+                                            <p class="text-sm">Data minimization, lawful basis, special category protection</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-50 p-6 rounded-lg border-2 border-blue-200 mb-6">
+                                <h2 class="text-2xl font-bold text-blue-900 mb-4">🛡️ Key Problems</h2>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-red-600 mb-2">Echo Chambers</h3>
+                                        <p class="text-sm text-gray-700">Algorithm amplifies divisive content creating filter bubbles</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-red-600 mb-2">Election Manipulation</h3>
+                                        <p class="text-sm text-gray-700">Targeted political content without safeguards</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-red-600 mb-2">Hidden Control</h3>
+                                        <p class="text-sm text-gray-700">Chronological feed buried - no meaningful choice</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-orange-600 mb-2">Sensitive Data</h3>
+                                        <p class="text-sm text-gray-700">Profiling may include special categories without consent</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-orange-600 mb-2">No Oversight</h3>
+                                        <p class="text-sm text-gray-700">Fully automated without meaningful human review</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-orange-600 mb-2">Misinformation</h3>
+                                        <p class="text-sm text-gray-700">False health and political claims amplified for clicks</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-green-50 p-6 rounded-lg border-2 border-green-200 mb-6">
+                                <h2 class="text-2xl font-bold text-green-900 mb-4">✅ Required Safeguards</h2>
+                                <div class="space-y-3 text-gray-700">
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">1. Algorithmic Transparency</p>
+                                        <p class="text-sm">Publish ranking parameters with understandable explanations</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">2. Prominent User Control</p>
+                                        <p class="text-sm">Make chronological feed easily accessible as default</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">3. Election Period Protections</p>
+                                        <p class="text-sm">Heightened moderation, limit political amplification</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">4. Data Protection Compliance</p>
+                                        <p class="text-sm">Explicit consent for profiling, prohibit special category inference</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">5. Independent Oversight</p>
+                                        <p class="text-sm">Regular external audits, DSA Art 34 risk assessments</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-green-700 mb-1">6. Content Diversity</p>
+                                        <p class="text-sm">Promote diverse viewpoints, support smaller creators</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 bg-gray-100 rounded-lg border-2 border-gray-300">
+                                <h2 class="text-2xl font-bold text-gray-900 mb-3">FRIA Decision</h2>
+                                <p class="text-xl font-semibold text-orange-600 mb-2">⚠️ APPROVE WITH MANDATORY SAFEGUARDS</p>
+                                <p class="text-gray-700">The AI recommender system poses significant risks to fundamental rights, particularly during election periods. Deployment must be conditional on implementing all safeguards above.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (state.currentView === 'scroll') {
+                app.innerHTML = renderFeed();
+            } else {
+                app.innerHTML = renderAnalysis();
+            }
+        }
+
+        // Initialize
+        startScroll();
+        render();
+    </script>
+</body>
+</html>
